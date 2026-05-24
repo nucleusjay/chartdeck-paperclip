@@ -1,113 +1,73 @@
-# chartdeck-dev — Paperclip Company
+# chartdeck-dev — Paperclip Company Package
 
-Multi-agent dev shop for the [chartdeck](https://github.com/nucleusjay/chartdeck) project. Designed for import into [Paperclip](https://paperclip.run/).
+Importable Paperclip company definition for [chartdeck](https://github.com/nucleusjay/chartdeck).
 
-## Org chart
+## Layout (Paperclip portable-package schema v5)
 
 ```
-                  ┌─────────────┐
-                  │   Hermes    │ (CEO — orchestration)
-                  │  claude opus│
-                  └──────┬──────┘
-                         │ dispatches
-        ┌────────────────┼────────────────┐
-        ▼                ▼                ▼
-   ┌─────────┐     ┌──────────┐    ┌─────────────┐
-   │  Codex  │     │  Google  │    │   Claude    │
-   │  gpt-5  │     │ gemini   │    │ claude-sonnet│
-   │ coding  │     │ design   │    │ code-review │
-   └─────────┘     └──────────┘    └─────────────┘
+chartdeck-dev-paperclip/
+├── COMPANY.md                   # required — frontmatter (name, slug, description, includes)
+├── .paperclip.yaml              # extension — adapter/runtime/permissions/envInputs per agent
+├── agents/
+│   ├── ceo/AGENTS.md            # Hermes — claude_local (opus), orchestrator
+│   ├── coding/AGENTS.md         # Codex — codex_local (gpt-5-codex), TDD writer
+│   ├── design/AGENTS.md         # Google — gemini_local (gemini-2.5-pro), multimodal
+│   └── code-review/AGENTS.md    # Claude — claude_local (sonnet), reviewer
+└── README.md                    # this file
 ```
 
 ## How to import
 
-Paperclip's import dialog warns that **hand-rezipped archives may not import correctly**. Two safe paths:
+1. Open Paperclip at `https://paperclip.inlakesh.tech/`.
+2. Get past the Traefik basic-auth popup, then log in to Paperclip.
+3. **Org Chart → Import → GitHub repo**.
+4. URL: `https://github.com/nucleusjay/chartdeck-paperclip`
+5. Target: **Create new company** (or merge into the existing one with the orphan CEO entry; collision strategy defaults to "Rename on conflict").
+6. **Preview import** → confirm.
 
-### Path A — GitHub repo (recommended)
+## After import — set secrets
 
-1. Create a private GitHub repo, e.g. `nucleusjay/chartdeck-dev-paperclip`.
-2. Push this folder's contents to it:
-   ```bash
-   cd D:/Claulde/Projects/chartdeck-dev-paperclip
-   git init && git add -A && git commit -m "Initial chartdeck-dev company"
-   gh repo create chartdeck-dev-paperclip --private --source=. --remote=origin --push
-   ```
-3. In Paperclip → Org Chart → Import → **GitHub repo** → paste the URL.
-4. Target: **Create new company** (or merge into the existing one that already has a CEO entry).
+In Paperclip's secret store (do **not** commit these to the repo):
 
-### Path B — Paperclip-native zip
+- `ANTHROPIC_API_KEY` — Hermes (CEO) + Claude (reviewer)
+- `OPENAI_API_KEY` — Codex (coding)
+- `GEMINI_API_KEY` — Google (design)
+- `GITHUB_TOKEN` — Hermes (pushes + PRs)
+- `TELEGRAM_BOT_TOKEN` — Hermes (owner bridge) — provision via `@BotFather` first
+- `TELEGRAM_ALLOWED_USERS` — your Telegram user ID (comma-separated for multiple)
+- `SSH_PRIVATE_KEY_PATH` — path inside the agent's container to the chartdeck deploy key
 
-1. In Paperclip, export the current (empty / CEO-only) company once.
-2. Inspect the exported zip's exact file/folder layout.
-3. Adjust the file names/extensions in this folder to match (Paperclip's schema is likely close to but may not exactly match `company.json` + `agents/<id>/agent.json` + `instructions.md` as used here).
-4. Re-zip using Paperclip's own format (or write a script that mirrors the exporter).
-
-## Layout
-
-```
-chartdeck-dev-paperclip/
-├── company.json              # top-level manifest (packages, env files, agent refs)
-├── environments/
-│   └── default.env           # shared env vars (placeholders for secrets)
-├── agents/
-│   ├── ceo/                  # Hermes — Claude Opus, orchestrator
-│   │   ├── agent.json
-│   │   └── instructions.md
-│   ├── coding/               # Codex — GPT-5, TDD code writer
-│   │   ├── agent.json
-│   │   └── instructions.md
-│   ├── design/               # Google — Gemini 2.5 Pro, multimodal designer
-│   │   ├── agent.json
-│   │   └── instructions.md
-│   └── code-review/          # Claude — Sonnet, principal reviewer
-│       ├── agent.json
-│       └── instructions.md
-└── README.md
-```
-
-## After import — finishing steps
-
-1. **Set secrets** via Paperclip's secret store (not committed to this repo):
-   - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GITHUB_TOKEN`
-   - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USERS` (provision via @BotFather first)
-   - SSH private key file at `/secrets/chartdeck_paperclip_id_ed25519` (matching the deploy key already on the VPS)
-2. **Verify dispatch wiring** — Hermes' `dispatch_to: ["coding", "design", "code-review"]` permission must match the actual agent IDs after import. If Paperclip renamed on collision (existing "CEO" entry), edit Hermes' permissions accordingly.
-3. **Owner Telegram handshake** — message the chartdeck bot once with `/start`; Hermes' heartbeat will pick you up as the allowed user.
-4. **Smoke** — `/status` via Telegram should return queue depth + branch state.
-
-## Field reference (what each agent.json field controls)
-
-| Field | Meaning |
-|---|---|
-| `command` | The CLI to invoke per dispatch |
-| `model` | Specific model snapshot |
-| `thinking_effort` | `low` / `medium` / `high` — passed to the underlying CLI |
-| `extra_args` | Appended after `command` on each invocation |
-| `env` | Names of env vars from the shared `default.env` (resolved at run) |
-| `timeout_sec` | Hard wall-clock cap per dispatch |
-| `interrupt_grace_sec` | Time given after SIGTERM before SIGKILL |
-| `run_policy.heartbeat_interval_sec` | 0 = no heartbeat; >0 = wake every N seconds |
-| `run_policy.resume_on` | What re-wakes the agent (dispatch / message / etc.) |
-| `permissions.filesystem.read/write/deny_write` | Glob patterns — Paperclip enforces at FS level |
-| `permissions.shell.allow/deny/require_owner_confirmation_for` | Command allowlist + denylist |
-| `permissions.network.allow` | URL prefix allowlist |
-| `permissions.dispatch_to` | Which other agents this one can spawn |
-
-## Dispatch flow (the production pattern)
+## Dispatch flow
 
 ```
 Owner → Telegram → Hermes
 Hermes → brainstorm → spec → Owner approves
 Hermes → plan → Owner approves
 Hermes → loop:
-  Hermes dispatches Codex on one task → Codex reports DONE + commit SHA
-  Hermes dispatches Claude for spec review → ✅ or ❌
+  Hermes dispatches Codex (one task) → DONE + commit SHA
+  Hermes dispatches Claude (spec review) → ✅ or ❌
   Hermes dispatches Codex (fix) if ❌
-  Hermes dispatches Claude for code-quality review → ✅ or ❌
+  Hermes dispatches Claude (code-quality review) → ✅ or ❌
   Hermes dispatches Codex (fix) if ❌
-Hermes merges feature branch → master
-Hermes runs deploy/update.sh on VPS (after owner confirmation)
+Hermes merges feature branch → master (with owner confirmation)
+Hermes runs deploy/update.sh on VPS (with owner confirmation)
 Hermes reports "shipped" on Telegram
 ```
 
-Google fires in parallel only on design-flagged tasks; its output flows through Hermes to Codex.
+Google fires in parallel only on design-flagged tasks; output routes through Hermes to Codex.
+
+## Schema notes
+
+This package follows Paperclip portable schema v5 (the `company-portability.js` service):
+
+- `COMPANY.md` frontmatter: `name` (required), `slug`, `description`, `includes` (list of agent/project/skill paths).
+- `agents/<slug>/AGENTS.md` frontmatter: `kind: agent` (required to avoid warning), `name`, `slug`, `title`, `role`, `reportsTo`.
+- `.paperclip.yaml`: extension config — `company.brandColor`, `company.requireBoardApprovalForNewAgents`, `agents.<slug>.{role,icon,capabilities,adapter,runtime,permissions,budgetMonthlyCents,envInputs}`, `sidebar`.
+
+Adapter types installed on the target Paperclip server (`/home/paperclip/.npm/_npx/.../node_modules/@paperclipai/`):
+
+- `adapter-claude-local` → Hermes, Claude
+- `adapter-codex-local` → Codex
+- `adapter-gemini-local` → Google
+
+If Paperclip rejects any field in `.paperclip.yaml`, it's silently ignored on import (the markdown is the source of truth for the agent's identity/instructions). The YAML is best-effort sugar.

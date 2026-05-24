@@ -1,0 +1,247 @@
+company:
+  brandColor: "#4f46e5"
+  requireBoardApprovalForNewAgents: false
+
+agents:
+  ceo:
+    role: ceo
+    icon: briefcase
+    capabilities: "Orchestration, Delegation, Strategic Planning, Cross-Agent Communication, Project Management, Spec Authoring, Plan Authoring, Integration, Deployment Management, Owner-facing Telegram Bridge"
+    adapter:
+      type: claude_local
+      config:
+        model: claude-opus-4-7
+        thinkingEffort: high
+    runtime:
+      heartbeatIntervalSec: 300
+      timeoutSec: 3600
+      interruptGraceSec: 30
+    permissions:
+      filesystem:
+        read: ["**"]
+        write:
+          - "docs/superpowers/specs/**"
+          - "docs/superpowers/plans/**"
+          - "docs/superpowers/notes/**"
+          - "README.md"
+          - "CHANGELOG.md"
+        denyWrite:
+          - "chartdeck/**"
+          - "static/**"
+          - "tests/**"
+          - ".env"
+          - ".env.*"
+      shell:
+        allow:
+          - "git status"
+          - "git log"
+          - "git diff"
+          - "git show"
+          - "git branch"
+          - "git checkout"
+          - "git merge --no-edit"
+          - "git worktree"
+          - "gh repo *"
+          - "gh pr *"
+          - "rtk *"
+        deny:
+          - "rm -rf *"
+          - "git push --force*"
+          - "git push -f*"
+          - "DROP TABLE*"
+          - "DELETE FROM*"
+        requireOwnerConfirmationFor:
+          - "git push origin master"
+          - "ssh root@2.24.192.16 'systemctl *'"
+          - "ssh root@2.24.192.16 'sh */update.sh*'"
+    budgetMonthlyCents: 0
+    envInputs:
+      - key: ANTHROPIC_API_KEY
+        scope: agent
+        required: true
+      - key: GITHUB_TOKEN
+        scope: agent
+        required: true
+      - key: TELEGRAM_BOT_TOKEN
+        scope: agent
+        required: false
+      - key: TELEGRAM_ALLOWED_USERS
+        scope: agent
+        required: false
+      - key: SSH_PRIVATE_KEY_PATH
+        scope: agent
+        required: true
+
+  coding:
+    role: engineer
+    icon: code
+    capabilities: "TDD code generation, schema migrations, test authoring, atomic commits, Python (FastAPI/aiosqlite/numpy), vanilla JS, SQL, systemd"
+    reportsTo: ceo
+    adapter:
+      type: codex_local
+      config:
+        model: gpt-5-codex
+        thinkingEffort: medium
+        workdir: "."
+    runtime:
+      heartbeatIntervalSec: 0
+      timeoutSec: 1800
+      interruptGraceSec: 15
+    permissions:
+      filesystem:
+        read: ["**"]
+        write:
+          - "chartdeck/**"
+          - "static/**"
+          - "tests/**"
+          - "deploy/**"
+          - "requirements.txt"
+          - "pytest.ini"
+          - ".gitignore"
+          - "app.py"
+        denyWrite:
+          - "docs/superpowers/specs/**"
+          - ".env"
+          - ".env.*"
+      shell:
+        allow:
+          - "rtk *"
+          - "git add *"
+          - "git commit -m *"
+          - "git checkout -b *"
+          - "git checkout *"
+          - "git push origin *"
+          - "git status"
+          - "git log"
+          - "git diff"
+          - "git show"
+          - "git stash *"
+          - "python3 *"
+          - "uvicorn *"
+          - "node --check *"
+        deny:
+          - "rm -rf *"
+          - "git push --force*"
+          - "git push -f*"
+          - "git push origin master*"
+          - "git push origin main*"
+          - "git merge*"
+          - "DROP TABLE*"
+          - "DELETE FROM*"
+          - "sudo *"
+    budgetMonthlyCents: 0
+    envInputs:
+      - key: OPENAI_API_KEY
+        scope: agent
+        required: true
+      - key: SSH_PRIVATE_KEY_PATH
+        scope: agent
+        required: false
+
+  design:
+    role: designer
+    icon: palette
+    capabilities: "UI/UX visual reasoning, mockup generation, screenshot analysis, design-system definition, multimodal review, CSS authoring"
+    reportsTo: ceo
+    adapter:
+      type: gemini_local
+      config:
+        model: gemini-2.5-pro
+        thinkingEffort: high
+        mode: multimodal
+        maxTokens: 8192
+    runtime:
+      heartbeatIntervalSec: 0
+      timeoutSec: 1200
+      interruptGraceSec: 10
+    permissions:
+      filesystem:
+        read: ["**"]
+        write:
+          - "docs/superpowers/specs/**"
+          - "docs/superpowers/notes/**"
+          - "design-artifacts/**"
+        denyWrite:
+          - "chartdeck/**"
+          - "static/**"
+          - "tests/**"
+          - "app.py"
+          - ".env"
+          - ".env.*"
+      shell:
+        allow:
+          - "rtk *"
+          - "git status"
+          - "git log"
+          - "git diff"
+          - "git show"
+          - "ls *"
+          - "cat *"
+          - "convert *"
+          - "ffmpeg *"
+        deny:
+          - "rm -rf *"
+          - "git push*"
+          - "git commit*"
+          - "sudo *"
+    budgetMonthlyCents: 0
+    envInputs:
+      - key: GEMINI_API_KEY
+        scope: agent
+        required: true
+
+  code-review:
+    role: reviewer
+    icon: shield-check
+    capabilities: "Deep static analysis, spec-compliance verification, security review, architectural critique, integration-hazard detection, asyncio lifecycle analysis"
+    reportsTo: ceo
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-7
+        thinkingEffort: high
+    runtime:
+      heartbeatIntervalSec: 0
+      timeoutSec: 1500
+      interruptGraceSec: 30
+    permissions:
+      filesystem:
+        read: ["**"]
+        write: []
+        denyWrite: ["**"]
+      shell:
+        allow:
+          - "rtk git diff *"
+          - "rtk git log *"
+          - "rtk git show *"
+          - "rtk git status"
+          - "rtk git branch"
+          - "rtk grep *"
+          - "rtk proxy pytest *"
+          - "rtk pytest *"
+          - "rtk node --check *"
+          - "ls *"
+          - "cat *"
+          - "head *"
+          - "tail *"
+        deny:
+          - "rm *"
+          - "git push*"
+          - "git commit*"
+          - "git add*"
+          - "git merge*"
+          - "git checkout*"
+          - "ssh *"
+          - "curl *"
+          - "sudo *"
+    budgetMonthlyCents: 0
+    envInputs:
+      - key: ANTHROPIC_API_KEY
+        scope: agent
+        required: true
+
+sidebar:
+  - agents/ceo
+  - agents/coding
+  - agents/design
+  - agents/code-review
