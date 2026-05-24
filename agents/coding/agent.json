@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "coding",
+  "name": "Codex",
+  "title": "Senior Implementation Engineer",
+  "type": "Codex Agent (local)",
+  "role": "Coding",
+  "capabilities": [
+    "TDD code generation",
+    "Schema migrations",
+    "Test authoring",
+    "Atomic commits per task"
+  ],
+  "instructions_file": "instructions.md",
+  "command": "codex",
+  "model": "gpt-5-codex",
+  "thinking_effort": "medium",
+  "extra_args": [
+    "exec",
+    "--full-auto",
+    "--workdir=${CHARTDECK_LOCAL_PATH}"
+  ],
+  "env": [
+    "OPENAI_API_KEY",
+    "SSH_PRIVATE_KEY_PATH",
+    "CHARTDECK_REPO",
+    "CHARTDECK_VPS_HOST",
+    "CHARTDECK_VPS_USER",
+    "CHARTDECK_VPS_PATH",
+    "CHARTDECK_LOCAL_PATH",
+    "CHARTDECK_PORT",
+    "CHARTDECK_BRANCH_DEFAULT",
+    "RTK_ENABLED"
+  ],
+  "timeout_sec": 1800,
+  "interrupt_grace_sec": 15,
+  "run_policy": {
+    "heartbeat_interval_sec": 0,
+    "resume_on": ["dispatch_from_ceo"]
+  },
+  "permissions": {
+    "filesystem": {
+      "read": ["**"],
+      "write": [
+        "chartdeck/**",
+        "static/**",
+        "tests/**",
+        "deploy/**",
+        "requirements.txt",
+        "pytest.ini",
+        ".gitignore",
+        "app.py"
+      ],
+      "deny_write": [
+        "docs/superpowers/specs/**",
+        ".env",
+        ".env.*",
+        "/secrets/**",
+        "/etc/**"
+      ]
+    },
+    "shell": {
+      "allow": [
+        "rtk *",
+        "git add *",
+        "git commit -m *",
+        "git checkout -b *",
+        "git checkout *",
+        "git push origin *:*",
+        "git status",
+        "git log",
+        "git diff",
+        "git show",
+        "git stash *",
+        "python3 *",
+        "uvicorn *",
+        "node --check *",
+        "ssh root@${CHARTDECK_VPS_HOST} 'journalctl *'",
+        "ssh root@${CHARTDECK_VPS_HOST} 'curl 127.0.0.1:*/healthz'"
+      ],
+      "deny": [
+        "rm -rf *",
+        "git push --force*",
+        "git push -f*",
+        "git push origin master*",
+        "git push origin main*",
+        "git merge*",
+        "DROP TABLE*",
+        "DELETE FROM*",
+        "sudo *"
+      ]
+    },
+    "network": {
+      "allow": [
+        "https://api.openai.com/**",
+        "https://pypi.org/**",
+        "https://files.pythonhosted.org/**",
+        "git@github.com:nucleusjay/**"
+      ]
+    },
+    "dispatch_to": []
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "id": "ceo",
+  "name": "Hermes",
+  "title": "Chief Executive Agent",
+  "type": "Hermes Agent (local)",
+  "role": "CEO",
+  "capabilities": [
+    "Orchestration",
+    "Delegation",
+    "Strategic Planning",
+    "Cross-agent integration",
+    "Owner-facing Telegram bridge"
+  ],
+  "instructions_file": "instructions.md",
+  "command": "claude",
+  "model": "claude-opus-4-7",
+  "thinking_effort": "high",
+  "extra_args": [
+    "--dangerously-skip-permissions=false",
+    "--system-prompt-file=instructions.md"
+  ],
+  "env": [
+    "ANTHROPIC_API_KEY",
+    "GITHUB_TOKEN",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_ALLOWED_USERS",
+    "SSH_PRIVATE_KEY_PATH",
+    "CHARTDECK_REPO",
+    "CHARTDECK_VPS_HOST",
+    "CHARTDECK_VPS_USER",
+    "CHARTDECK_VPS_PATH",
+    "CHARTDECK_LOCAL_PATH",
+    "CHARTDECK_PORT",
+    "CHARTDECK_BRANCH_DEFAULT"
+  ],
+  "timeout_sec": 3600,
+  "interrupt_grace_sec": 30,
+  "run_policy": {
+    "heartbeat_interval_sec": 300,
+    "resume_on": ["telegram_message", "owner_command"]
+  },
+  "permissions": {
+    "filesystem": {
+      "read": ["**"],
+      "write": [
+        "docs/superpowers/specs/**",
+        "docs/superpowers/plans/**",
+        "docs/superpowers/notes/**",
+        ".planning/**",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "deny_write": [
+        "chartdeck/**",
+        "static/**",
+        "tests/**",
+        ".env",
+        ".env.*",
+        "/secrets/**"
+      ]
+    },
+    "shell": {
+      "allow": [
+        "git status",
+        "git log",
+        "git diff",
+        "git show",
+        "git branch",
+        "git push origin",
+        "git checkout",
+        "git merge --no-edit",
+        "git worktree",
+        "gh repo *",
+        "gh pr *",
+        "gh deploy-key *",
+        "rtk *",
+        "ssh root@${CHARTDECK_VPS_HOST} *"
+      ],
+      "deny": [
+        "rm -rf *",
+        "git push --force*",
+        "git push -f*",
+        "DROP TABLE*",
+        "DELETE FROM*"
+      ],
+      "require_owner_confirmation_for": [
+        "ssh root@${CHARTDECK_VPS_HOST} 'systemctl *'",
+        "ssh root@${CHARTDECK_VPS_HOST} 'sh */update.sh*'",
+        "git push origin master"
+      ]
+    },
+    "network": {
+      "allow": [
+        "https://api.telegram.org/**",
+        "https://api.github.com/**",
+        "git@github.com:nucleusjay/**"
+      ]
+    },
+    "dispatch_to": ["coding", "design", "code-review"]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "name": "chartdeck-dev",
+  "description": "Multi-agent dev shop for chartdeck (multi-pane live charting + alerts). Hermes orchestrates; Codex writes code; Google designs UI; Claude reviews. Single human owner. Production target: VPS 2.24.192.16:8091 and (long-term) the M5 dashboard fold-in at dashboard.inlakesh.tech.",
+  "packages": [
+    "git",
+    "gh",
+    "ssh",
+    "curl",
+    "jq",
+    "ripgrep",
+    "python3.12",
+    "python3.12-venv",
+    "python3-pip",
+    "nodejs-20",
+    "bun",
+    "npx",
+    "rtk",
+    "ffmpeg",
+    "imagemagick",
+    "sqlite3"
+  ],
+  "environments": [
+    "environments/default.env"
+  ],
+  "agents": [
+    "agents/ceo/agent.json",
+    "agents/coding/agent.json",
+    "agents/design/agent.json",
+    "agents/code-review/agent.json"
+  ]
+}
