@@ -10,7 +10,7 @@ agents:
     adapter:
       type: hermes_local
       config:
-        model: "anthropic/claude-3.5-sonnet"
+        model: "tencent/hy3-preview"
         provider: "openrouter"
         persistSession: true
         timeoutSec: 300
@@ -82,7 +82,7 @@ agents:
     adapter:
       type: hermes_local
       config:
-        model: "openai/gpt-4o"
+        model: "tencent/hy3-preview"
         provider: "openrouter"
         persistSession: true
         timeoutSec: 300
@@ -150,7 +150,7 @@ agents:
     adapter:
       type: hermes_local
       config:
-        model: "google/gemini-2.5-pro"
+        model: "tencent/hy3-preview"
         provider: "openrouter"
         persistSession: true
         timeoutSec: 300
@@ -202,7 +202,7 @@ agents:
     adapter:
       type: hermes_local
       config:
-        model: "anthropic/claude-3.5-sonnet"
+        model: "tencent/hy3-preview"
         provider: "openrouter"
         persistSession: true
         timeoutSec: 300
