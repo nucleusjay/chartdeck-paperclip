@@ -9,7 +9,7 @@
   "adapter": {
     "type": "claude_local",
     "config": {
-      "model": "claude-sonnet-4-7",
+      "model": "sonnet",
       "thinkingEffort": "high"
     }
   },

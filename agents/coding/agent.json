@@ -9,7 +9,8 @@
   "adapter": {
     "type": "codex_local",
     "config": {
-      "model": "gpt-5-codex",
+      "command": "codex --dangerously-bypass-approvals-and-sandbox",
+      "model": "best",
       "thinkingEffort": "medium",
       "workdir": "."
     }
