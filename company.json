@@ -1,7 +1,0 @@
-{
-  "name": "chartdeck-dev",
-  "slug": "chartdeck-dev",
-  "description": "Multi-agent dev shop for chartdeck — a free, self-hosted multi-pane live charting + alerts platform. Hermes orchestrates; Codex writes code; Google designs UI; Claude reviews. Single human owner. Production target VPS 2.24.192.16:8091 and (long-term) M5 dashboard fold-in at dashboard.inlakesh.tech.",
-  "brandColor": "#4f46e5",
-  "requireBoardApprovalForNewAgents": false
-}

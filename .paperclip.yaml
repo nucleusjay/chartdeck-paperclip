@@ -1,3 +1,5 @@
+schema: paperclip/v1
+
 company:
   brandColor: "#4f46e5"
   requireBoardApprovalForNewAgents: false
@@ -12,6 +14,13 @@ agents:
       config:
         model: opus
         thinkingEffort: high
+        # Route Claude Code through the Hermes Anthropic proxy on the VPS host
+        # to reuse the Claude Pro subscription instead of paying per-token via
+        # ANTHROPIC_API_KEY. See README "Hermes proxy wiring" before importing —
+        # requires the proxy to bind beyond 127.0.0.1 or the Paperclip server
+        # to run with network_mode: host on the VPS.
+        env:
+          ANTHROPIC_BASE_URL: "http://host.docker.internal:8645/v1"
     runtime:
       heartbeatIntervalSec: 300
       timeoutSec: 3600
@@ -205,6 +214,10 @@ agents:
       config:
         model: sonnet
         thinkingEffort: high
+        # Reuse the Claude Pro subscription via the Hermes Anthropic proxy.
+        # See README "Hermes proxy wiring" for network prerequisites.
+        env:
+          ANTHROPIC_BASE_URL: "http://host.docker.internal:8645/v1"
     runtime:
       heartbeatIntervalSec: 0
       timeoutSec: 1500

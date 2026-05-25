@@ -1,29 +1,24 @@
 # chartdeck-dev — Paperclip Company Package
 
-Importable JSON-based Paperclip company definition for [chartdeck](https://github.com/nucleusjay/chartdeck).
+Importable Paperclip company package for [chartdeck](https://github.com/nucleusjay/chartdeck), conforming to the [Agent Companies specification](https://agentcompanies.io/specification) (`agentcompanies/v1`) with the Paperclip vendor extension (`paperclip/v1`) for adapter, runtime, and permissions configuration.
 
-## Layout (Paperclip JSON-Package Schema)
+## Layout (Agent Companies v1 + Paperclip vendor extension)
 
 ```
 chartdeck-dev-paperclip/
-├── company.json                      # company manifest (name, slug, description, brand color)
+├── COMPANY.md                        # canonical company root (frontmatter + body)
 ├── README.md                         # this file (import instructions)
+├── .paperclip.yaml                   # Paperclip vendor extension: adapters, runtime, permissions, envInputs
 ├── environments/
 │   └── default.env                   # shared environment template (secrets blank)
 └── agents/
-    ├── ceo/                          # Hermes (CEO, strategic orchestration)
-    │   ├── agent.json                # role, runtime, hermes_local adapter config, permissions
-    │   └── instructions.md           # identity, delegation rules, Telegram bridge commands
-    ├── coding/                       # Codex (implementation engineer, TDD writer)
-    │   ├── agent.json
-    │   └── instructions.md
-    ├── design/                       # Google (UI/UX lead, custom layouts and styling)
-    │   ├── agent.json
-    │   └── instructions.md
-    └── code-review/                  # Claude (reviewer, spec compliance and quality gate)
-        ├── agent.json
-        └── instructions.md
+    ├── ceo/AGENTS.md                 # Hermes — CEO, strategic orchestration, Telegram bridge
+    ├── coding/AGENTS.md              # Codex — Senior Implementation Engineer (TDD)
+    ├── design/AGENTS.md              # Google — Design Lead (UI/UX, CSS authoring)
+    └── code-review/AGENTS.md         # Claude — Principal Code Reviewer (two-stage gate)
 ```
+
+Each `AGENTS.md` carries the agent's identity, workflow, hard rules, and capabilities directly in the file body (per spec section 8). The companion `.paperclip.yaml` only declares runtime, adapter selection, filesystem/shell permissions, and env inputs — never instructions or identity.
 
 ## How to import
 
@@ -38,13 +33,37 @@ chartdeck-dev-paperclip/
 
 In Paperclip's secret store (do **not** commit these to the repository):
 
-- `ANTHROPIC_API_KEY` — Sourced from your active OpenRouter key `sk-or-v1-...` (Hermes + Claude reviewer).
-- `OPENAI_API_KEY` — Sourced from your active OpenRouter key `sk-or-v1-...` (Codex coding).
-- `GEMINI_API_KEY` — Sourced from your active Google API Key `AIzaSyBM...` (Google designer).
-- `GITHUB_TOKEN` — Hermes (pushes + PRs) — populated with a placeholder or GitHub PAT.
-- `TELEGRAM_BOT_TOKEN` — Hermes bridge token `8424082896:AAHAIK2fyf...`.
-- `TELEGRAM_ALLOWED_USERS` — Your Telegram ID `7629196096`.
-- `SSH_PRIVATE_KEY_PATH` — Path to deploy key `/home/paperclip/.ssh/chartdeck_deploy`.
+- `ANTHROPIC_API_KEY` — Hermes (CEO) + Claude (reviewer). Required as a fallback when the Hermes Anthropic proxy is unreachable or rate-limited.
+- `OPENAI_API_KEY` — Codex (coding). Direct API; no Hermes proxy exists for OpenAI.
+- `GEMINI_API_KEY` — Google (design). Direct Google AI Studio; free tier is already cheapest.
+- `GITHUB_TOKEN` — Hermes (pushes + PRs).
+- `TELEGRAM_BOT_TOKEN` — Hermes Telegram bridge.
+- `TELEGRAM_ALLOWED_USERS` — Comma-separated Telegram user IDs allowed to message the bridge.
+- `SSH_PRIVATE_KEY_PATH` — Path to deploy key inside the agent container, e.g. `/home/paperclip/.ssh/chartdeck_deploy`.
+
+### Auth strategy
+
+| Agent | Model | Auth | Cost |
+|---|---|---|---|
+| Hermes (CEO) | Claude Opus | Hermes Anthropic proxy → Claude Pro subscription (with `ANTHROPIC_API_KEY` fallback) | $0 marginal when proxy is reachable |
+| Claude (reviewer) | Claude Sonnet | Hermes Anthropic proxy → Claude Pro subscription (with `ANTHROPIC_API_KEY` fallback) | $0 marginal when proxy is reachable |
+| Codex (coding) | Codex CLI default | Direct OpenAI API via `OPENAI_API_KEY` | Pay-as-you-go |
+| Google (design) | Gemini 2.5 Pro | Direct Google AI Studio via `GEMINI_API_KEY` | Free tier |
+
+## Hermes proxy wiring
+
+The two Claude agents (`ceo`, `code-review`) are configured with `ANTHROPIC_BASE_URL=http://host.docker.internal:8645/v1` in their adapter `config.env` block (see `.paperclip.yaml`). This routes the local `claude` CLI through the Hermes Anthropic proxy on the VPS, which translates the OpenAI-compatible request into a Claude Pro OAuth call — using your subscription instead of billing the API key.
+
+**Two prerequisites for this to work on the VPS:**
+
+1. **The Hermes proxy must be reachable from inside the Paperclip server container.** The systemd unit ships bound to `127.0.0.1:8645`, which is unreachable from a sibling container. Either:
+   - Rebind the proxy to the Docker bridge interface (e.g. `--host 172.17.0.1`) by editing `/root/.config/systemd/user/hermes-proxy-anthropic.service` and restarting, **or**
+   - Run the Paperclip server with `network_mode: host` in `docker/docker-compose.yml`, **or**
+   - Add `extra_hosts: ["host.docker.internal:host-gateway"]` to the Paperclip server service and rebind the proxy to `--host 0.0.0.0` (firewall the port).
+
+2. **Verify post-import:** `docker exec -it <paperclip-server> curl -sf http://host.docker.internal:8645/v1/models` should return a model list. If it 404s/refuses, the agents will fall back to `ANTHROPIC_API_KEY` (direct API, billed).
+
+If you don't want to wire the proxy yet, remove the `env: ANTHROPIC_BASE_URL: …` line from the `ceo` and `code-review` adapter configs in `.paperclip.yaml` and the agents will use direct API from day one.
 
 ## Dispatch flow
 
