@@ -9,7 +9,8 @@
   "adapter": {
     "type": "codex_local",
     "config": {
-      "command": "codex --dangerously-bypass-approvals-and-sandbox",
+      "command": "codex",
+      "extraArgs": ["--dangerously-bypass-approvals-and-sandbox", "--skip-git-repo-check"],
       "model": "best",
       "thinkingEffort": "medium",
       "workdir": "."
