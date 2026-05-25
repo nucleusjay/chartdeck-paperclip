@@ -6,12 +6,10 @@
   "icon": "briefcase",
   "capabilities": "Orchestration, Delegation, Strategic Planning, Cross-Agent Communication, Project Management, Spec Authoring, Plan Authoring, Integration, Deployment Management, Owner-facing Telegram Bridge",
   "adapter": {
-    "type": "hermes_local",
+    "type": "claude_local",
     "config": {
-      "model": "tencent/hy3-preview",
-      "provider": "openrouter",
-      "persistSession": true,
-      "timeoutSec": 300
+      "model": "claude-opus-4-7",
+      "thinkingEffort": "high"
     }
   },
   "runtime": {

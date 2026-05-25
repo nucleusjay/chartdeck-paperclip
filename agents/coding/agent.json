@@ -7,12 +7,10 @@
   "capabilities": "TDD code generation, schema migrations, test authoring, atomic commits, Python (FastAPI/aiosqlite/numpy), vanilla JS, SQL, systemd",
   "reportsTo": "ceo",
   "adapter": {
-    "type": "hermes_local",
+    "type": "codex_local",
     "config": {
-      "model": "tencent/hy3-preview",
-      "provider": "openrouter",
-      "persistSession": true,
-      "timeoutSec": 300,
+      "model": "gpt-5-codex",
+      "thinkingEffort": "medium",
       "workdir": "."
     }
   },
