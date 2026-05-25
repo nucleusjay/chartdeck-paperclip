@@ -52,18 +52,20 @@ In Paperclip's secret store (do **not** commit these to the repository):
 
 ## Hermes proxy wiring
 
-The two Claude agents (`ceo`, `code-review`) are configured with `ANTHROPIC_BASE_URL=http://host.docker.internal:8645/v1` in their adapter `config.env` block (see `.paperclip.yaml`). This routes the local `claude` CLI through the Hermes Anthropic proxy on the VPS, which translates the OpenAI-compatible request into a Claude Pro OAuth call — using your subscription instead of billing the API key.
+The two Claude agents (`ceo`, `code-review`) ship with `ANTHROPIC_BASE_URL=http://127.0.0.1:8645/v1` in their adapter `config.env` block (see `.paperclip.yaml`). This routes the local `claude` CLI through the Hermes Anthropic proxy, which resolves the request against the Claude Pro OAuth session — using your subscription instead of billing `ANTHROPIC_API_KEY`.
 
-**Two prerequisites for this to work on the VPS:**
+This works because **Paperclip runs as a host systemd service** (`paperclip.service`, user `paperclip`, npx-installed under `/home/paperclip`), not in a Docker container. The agent subprocess (`claude` CLI) inherits the host network namespace, so `127.0.0.1:8645` resolves directly to the Hermes proxy running on the same host.
 
-1. **The Hermes proxy must be reachable from inside the Paperclip server container.** The systemd unit ships bound to `127.0.0.1:8645`, which is unreachable from a sibling container. Either:
-   - Rebind the proxy to the Docker bridge interface (e.g. `--host 172.17.0.1`) by editing `/root/.config/systemd/user/hermes-proxy-anthropic.service` and restarting, **or**
-   - Run the Paperclip server with `network_mode: host` in `docker/docker-compose.yml`, **or**
-   - Add `extra_hosts: ["host.docker.internal:host-gateway"]` to the Paperclip server service and rebind the proxy to `--host 0.0.0.0` (firewall the port).
+**Verify post-import** (from the VPS):
 
-2. **Verify post-import:** `docker exec -it <paperclip-server> curl -sf http://host.docker.internal:8645/v1/models` should return a model list. If it 404s/refuses, the agents will fall back to `ANTHROPIC_API_KEY` (direct API, billed).
+```sh
+sudo -u paperclip curl -sf -o /dev/null -w '%{http_code}\n' \
+  http://127.0.0.1:8645/v1/models -H 'Authorization: Bearer dummy'
+```
 
-If you don't want to wire the proxy yet, remove the `env: ANTHROPIC_BASE_URL: …` line from the `ceo` and `code-review` adapter configs in `.paperclip.yaml` and the agents will use direct API from day one.
+Expect `200` (or `400` if the proxy rejects the empty body — either confirms reachability). If `connection refused`, the Hermes proxy isn't running: `systemctl --user status hermes-proxy-anthropic.service` as root.
+
+If you don't want to use the proxy, remove the `env: ANTHROPIC_BASE_URL: …` line from the `ceo` and `code-review` adapter configs in `.paperclip.yaml` and the agents will use `ANTHROPIC_API_KEY` from day one.
 
 ## Dispatch flow
 
