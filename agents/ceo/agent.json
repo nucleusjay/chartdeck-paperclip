@@ -1,0 +1,96 @@
+{
+  "name": "Hermes",
+  "slug": "ceo",
+  "title": "Chief Executive Agent",
+  "role": "ceo",
+  "icon": "briefcase",
+  "capabilities": "Orchestration, Delegation, Strategic Planning, Cross-Agent Communication, Project Management, Spec Authoring, Plan Authoring, Integration, Deployment Management, Owner-facing Telegram Bridge",
+  "adapter": {
+    "type": "hermes_local",
+    "config": {
+      "model": "tencent/hy3-preview",
+      "provider": "openrouter",
+      "persistSession": true,
+      "timeoutSec": 300
+    }
+  },
+  "runtime": {
+    "heartbeatIntervalSec": 300,
+    "timeoutSec": 3600,
+    "interruptGraceSec": 30
+  },
+  "permissions": {
+    "filesystem": {
+      "read": ["**"],
+      "write": [
+        "docs/superpowers/specs/**",
+        "docs/superpowers/plans/**",
+        "docs/superpowers/notes/**",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "denyWrite": [
+        "chartdeck/**",
+        "static/**",
+        "tests/**",
+        ".env",
+        ".env.*"
+      ]
+    },
+    "shell": {
+      "allow": [
+        "git status",
+        "git log",
+        "git diff",
+        "git show",
+        "git branch",
+        "git checkout",
+        "git merge --no-edit",
+        "git worktree",
+        "gh repo *",
+        "gh pr *",
+        "rtk *"
+      ],
+      "deny": [
+        "rm -rf *",
+        "git push --force*",
+        "git push -f*",
+        "DROP TABLE*",
+        "DELETE FROM*"
+      ],
+      "requireOwnerConfirmationFor": [
+        "git push origin master",
+        "ssh root@2.24.192.16 'systemctl *'",
+        "ssh root@2.24.192.16 'sh */update.sh*'"
+      ]
+    }
+  },
+  "budgetMonthlyCents": 0,
+  "envInputs": [
+    {
+      "key": "ANTHROPIC_API_KEY",
+      "scope": "agent",
+      "required": true
+    },
+    {
+      "key": "GITHUB_TOKEN",
+      "scope": "agent",
+      "required": true
+    },
+    {
+      "key": "TELEGRAM_BOT_TOKEN",
+      "scope": "agent",
+      "required": false
+    },
+    {
+      "key": "TELEGRAM_ALLOWED_USERS",
+      "scope": "agent",
+      "required": false
+    },
+    {
+      "key": "SSH_PRIVATE_KEY_PATH",
+      "scope": "agent",
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "Google",
+  "slug": "design",
+  "title": "Design Lead",
+  "role": "designer",
+  "icon": "palette",
+  "capabilities": "UI/UX visual reasoning, mockup generation, screenshot analysis, design-system definition, multimodal review, CSS authoring",
+  "reportsTo": "ceo",
+  "adapter": {
+    "type": "hermes_local",
+    "config": {
+      "model": "tencent/hy3-preview",
+      "provider": "openrouter",
+      "persistSession": true,
+      "timeoutSec": 300
+    }
+  },
+  "runtime": {
+    "heartbeatIntervalSec": 0,
+    "timeoutSec": 1200,
+    "interruptGraceSec": 10
+  },
+  "permissions": {
+    "filesystem": {
+      "read": ["**"],
+      "write": [
+        "docs/superpowers/specs/**",
+        "docs/superpowers/notes/**",
+        "design-artifacts/**"
+      ],
+      "denyWrite": [
+        "chartdeck/**",
+        "static/**",
+        "tests/**",
+        "app.py",
+        ".env",
+        ".env.*"
+      ]
+    },
+    "shell": {
+      "allow": [
+        "rtk *",
+        "git status",
+        "git log",
+        "git diff",
+        "git show",
+        "ls *",
+        "cat *",
+        "convert *",
+        "ffmpeg *"
+      ],
+      "deny": [
+        "rm -rf *",
+        "git push*",
+        "git commit*",
+        "sudo *"
+      ]
+    }
+  },
+  "budgetMonthlyCents": 0,
+  "envInputs": [
+    {
+      "key": "GEMINI_API_KEY",
+      "scope": "agent",
+      "required": true
+    }
+  ]
+}

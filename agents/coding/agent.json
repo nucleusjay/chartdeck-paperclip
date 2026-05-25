@@ -1,0 +1,86 @@
+{
+  "name": "Codex",
+  "slug": "coding",
+  "title": "Senior Implementation Engineer",
+  "role": "engineer",
+  "icon": "code",
+  "capabilities": "TDD code generation, schema migrations, test authoring, atomic commits, Python (FastAPI/aiosqlite/numpy), vanilla JS, SQL, systemd",
+  "reportsTo": "ceo",
+  "adapter": {
+    "type": "hermes_local",
+    "config": {
+      "model": "tencent/hy3-preview",
+      "provider": "openrouter",
+      "persistSession": true,
+      "timeoutSec": 300,
+      "workdir": "."
+    }
+  },
+  "runtime": {
+    "heartbeatIntervalSec": 0,
+    "timeoutSec": 1800,
+    "interruptGraceSec": 15
+  },
+  "permissions": {
+    "filesystem": {
+      "read": ["**"],
+      "write": [
+        "chartdeck/**",
+        "static/**",
+        "tests/**",
+        "deploy/**",
+        "requirements.txt",
+        "pytest.ini",
+        ".gitignore",
+        "app.py"
+      ],
+      "denyWrite": [
+        "docs/superpowers/specs/**",
+        ".env",
+        ".env.*"
+      ]
+    },
+    "shell": {
+      "allow": [
+        "rtk *",
+        "git add *",
+        "git commit -m *",
+        "git checkout -b *",
+        "git checkout *",
+        "git push origin *",
+        "git status",
+        "git log",
+        "git diff",
+        "git show",
+        "git stash *",
+        "python3 *",
+        "uvicorn *",
+        "node --check *"
+      ],
+      "deny": [
+        "rm -rf *",
+        "git push --force*",
+        "git push -f*",
+        "git push origin master*",
+        "git push origin main*",
+        "git merge*",
+        "DROP TABLE*",
+        "DELETE FROM*",
+        "sudo *"
+      ]
+    }
+  },
+  "budgetMonthlyCents": 0,
+  "envInputs": [
+    {
+      "key": "OPENAI_API_KEY",
+      "scope": "agent",
+      "required": true
+    },
+    {
+      "key": "SSH_PRIVATE_KEY_PATH",
+      "scope": "agent",
+      "required": false
+    }
+  ]
+}
