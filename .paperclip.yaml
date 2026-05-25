@@ -8,10 +8,12 @@ agents:
     icon: briefcase
     capabilities: "Orchestration, Delegation, Strategic Planning, Cross-Agent Communication, Project Management, Spec Authoring, Plan Authoring, Integration, Deployment Management, Owner-facing Telegram Bridge"
     adapter:
-      type: claude_local
+      type: hermes_local
       config:
-        model: claude-opus-4-7
-        thinkingEffort: high
+        model: "anthropic/claude-3.5-sonnet"
+        provider: "openrouter"
+        persistSession: true
+        timeoutSec: 300
     runtime:
       heartbeatIntervalSec: 300
       timeoutSec: 3600
@@ -78,10 +80,12 @@ agents:
     capabilities: "TDD code generation, schema migrations, test authoring, atomic commits, Python (FastAPI/aiosqlite/numpy), vanilla JS, SQL, systemd"
     reportsTo: ceo
     adapter:
-      type: codex_local
+      type: hermes_local
       config:
-        model: gpt-5-codex
-        thinkingEffort: medium
+        model: "openai/gpt-4o"
+        provider: "openrouter"
+        persistSession: true
+        timeoutSec: 300
         workdir: "."
     runtime:
       heartbeatIntervalSec: 0
@@ -144,12 +148,12 @@ agents:
     capabilities: "UI/UX visual reasoning, mockup generation, screenshot analysis, design-system definition, multimodal review, CSS authoring"
     reportsTo: ceo
     adapter:
-      type: gemini_local
+      type: hermes_local
       config:
-        model: gemini-2.5-pro
-        thinkingEffort: high
-        mode: multimodal
-        maxTokens: 8192
+        model: "google/gemini-2.5-pro"
+        provider: "openrouter"
+        persistSession: true
+        timeoutSec: 300
     runtime:
       heartbeatIntervalSec: 0
       timeoutSec: 1200
@@ -196,10 +200,12 @@ agents:
     capabilities: "Deep static analysis, spec-compliance verification, security review, architectural critique, integration-hazard detection, asyncio lifecycle analysis"
     reportsTo: ceo
     adapter:
-      type: claude_local
+      type: hermes_local
       config:
-        model: claude-sonnet-4-7
-        thinkingEffort: high
+        model: "anthropic/claude-3.5-sonnet"
+        provider: "openrouter"
+        persistSession: true
+        timeoutSec: 300
     runtime:
       heartbeatIntervalSec: 0
       timeoutSec: 1500
